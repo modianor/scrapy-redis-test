@@ -193,6 +193,7 @@ class SpiderSlot(object):
         self.storage = storage
         self.uri = uri
         self.itemcount = 0
+        self.taskcount = 0
 
 
 class FeedExporter(object):
@@ -226,6 +227,7 @@ class FeedExporter(object):
         crawler.signals.connect(o.open_spider, signals.spider_opened)
         crawler.signals.connect(o.close_spider, signals.spider_closed)
         crawler.signals.connect(o.item_scraped, signals.item_scraped)
+        crawler.signals.connect(o.task_scraped, signals.task_scraped)
         return o
 
     def open_spider(self, spider):
@@ -268,6 +270,15 @@ class FeedExporter(object):
         slot.exporter.export_item(item)
         slot.itemcount += 1
         return item
+
+    def task_scraped(self, task, spider):
+        slot = self.slot
+        if not self._exporting:
+            slot.exporter.start_exporting()
+            self._exporting = True
+        slot.exporter.export_item(task)
+        slot.taskcount += 1
+        return task
 
     def _load_components(self, setting_prefix):
         conf = without_none_values(self.settings.getwithbase(setting_prefix))

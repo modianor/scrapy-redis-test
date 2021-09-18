@@ -27,6 +27,9 @@ class MongoDBPipeline(object):
             self.insert_item(self.Tweets, item)
         return item
 
+    def process_task(self, task, spider):
+        pass
+
     @staticmethod
     def insert_item(collection, item):
         try:

@@ -19,6 +19,9 @@ response_downloaded = object()
 item_scraped = object()
 item_dropped = object()
 item_error = object()
+task_scraped = object()
+task_dropped = object()
+task_error = object()
 
 # for backward compatibility
 stats_spider_opened = spider_opened
@@ -26,5 +29,6 @@ stats_spider_closing = spider_closed
 stats_spider_closed = spider_closed
 
 item_passed = item_scraped
+task_passed = task_scraped
 
 request_received = request_scheduled

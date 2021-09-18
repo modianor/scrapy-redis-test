@@ -36,12 +36,12 @@ DOWNLOADER_MIDDLEWARES = {
 
 ITEM_PIPELINES = {
     'pipelines.MongoDBPipeline': 300,
+    # 'scrapy.pipelines.tasks.TaskPipeline': 400
 }
 
 # MongoDb Config
 MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
-
 
 # Redis Config
 REDIS_HOST = 'localhost'

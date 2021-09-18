@@ -74,10 +74,10 @@ DOWNLOAD_HANDLERS_BASE = {
     'ftp': 'scrapy.core.downloader.handlers.ftp.FTPDownloadHandler',
 }
 
-DOWNLOAD_TIMEOUT = 180      # 3mins
+DOWNLOAD_TIMEOUT = 180  # 3mins
 
-DOWNLOAD_MAXSIZE = 1024*1024*1024   # 1024m
-DOWNLOAD_WARNSIZE = 32*1024*1024    # 32m
+DOWNLOAD_MAXSIZE = 1024 * 1024 * 1024  # 1024m
+DOWNLOAD_WARNSIZE = 32 * 1024 * 1024  # 32m
 
 DOWNLOAD_FAIL_ON_DATALOSS = True
 
@@ -86,8 +86,8 @@ DOWNLOADER = 'scrapy.core.downloader.Downloader'
 DOWNLOADER_HTTPCLIENTFACTORY = 'scrapy.core.downloader.webclient.ScrapyHTTPClientFactory'
 DOWNLOADER_CLIENTCONTEXTFACTORY = 'scrapy.core.downloader.contextfactory.ScrapyClientContextFactory'
 DOWNLOADER_CLIENT_TLS_CIPHERS = 'DEFAULT'
-DOWNLOADER_CLIENT_TLS_METHOD = 'TLS' # Use highest TLS/SSL protocol version supported by the platform,
-                                     # also allowing negotiation
+DOWNLOADER_CLIENT_TLS_METHOD = 'TLS'  # Use highest TLS/SSL protocol version supported by the platform,
+# also allowing negotiation
 DOWNLOADER_CLIENT_TLS_VERBOSE_LOGGING = False
 
 DOWNLOADER_MIDDLEWARES = {}
@@ -110,6 +110,11 @@ DOWNLOADER_MIDDLEWARES_BASE = {
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
     # Downloader side
 }
+
+# TASK_PIPELINES = {}
+# TASK_PIPELINES_BASE = {
+#     'scrapy.pipelines.tasks.TaskPipeline': 400
+# }
 
 DOWNLOADER_STATS = True
 
@@ -190,6 +195,7 @@ IMAGES_STORE_S3_ACL = 'private'
 IMAGES_STORE_GCS_ACL = ''
 
 ITEM_PROCESSOR = 'scrapy.pipelines.ItemPipelineManager'
+TASK_PROCESSOR = 'scrapy.pipelines.TASKPipelineManager'
 
 ITEM_PIPELINES = {}
 ITEM_PIPELINES_BASE = {}
@@ -214,8 +220,8 @@ MAIL_FROM = 'scrapy@localhost'
 MAIL_PASS = None
 MAIL_USER = None
 
-MEMDEBUG_ENABLED = False        # enable memory debugging
-MEMDEBUG_NOTIFY = []            # send memory debugging report by mail at engine shutdown
+MEMDEBUG_ENABLED = False  # enable memory debugging
+MEMDEBUG_NOTIFY = []  # send memory debugging report by mail at engine shutdown
 
 MEMUSAGE_CHECK_INTERVAL_SECONDS = 60.0
 MEMUSAGE_ENABLED = True

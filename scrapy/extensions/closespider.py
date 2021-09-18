@@ -37,6 +37,8 @@ class CloseSpider(object):
             crawler.signals.connect(self.spider_opened, signal=signals.spider_opened)
         if self.close_on.get('itemcount'):
             crawler.signals.connect(self.item_scraped, signal=signals.item_scraped)
+        if self.close_on.get('taskcount'):
+            crawler.signals.connect(self.task_scraped, signal=signals.task_scraped)
         crawler.signals.connect(self.spider_closed, signal=signals.spider_closed)
 
     @classmethod
@@ -62,6 +64,11 @@ class CloseSpider(object):
         self.counter['itemcount'] += 1
         if self.counter['itemcount'] == self.close_on['itemcount']:
             self.crawler.engine.close_spider(spider, 'closespider_itemcount')
+
+    def task_scraped(self, task, spider):
+        self.counter['taskcount'] += 1
+        if self.counter['taskcount'] == self.close_on['taskcount']:
+            self.crawler.engine.close_spider(spider, 'closespider_taskcount')
 
     def spider_closed(self, spider):
         task = getattr(self, 'task', False)

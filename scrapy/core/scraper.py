@@ -7,11 +7,12 @@ from collections import deque
 from twisted.python.failure import Failure
 from twisted.internet import defer
 
+from scrapy.task import Task
 from scrapy.utils.defer import defer_result, defer_succeed, parallel, iter_errback
 from scrapy.utils.spider import iterate_spider_output
 from scrapy.utils.misc import load_object
 from scrapy.utils.log import logformatter_adapter, failure_to_exc_info
-from scrapy.exceptions import CloseSpider, DropItem, IgnoreRequest
+from scrapy.exceptions import CloseSpider, DropItem, IgnoreRequest, DropTask
 from scrapy import signals
 from scrapy.http import Request, Response
 from scrapy.item import BaseItem
@@ -32,6 +33,7 @@ class Slot(object):
         self.active = set()
         self.active_size = 0
         self.itemproc_size = 0
+        self.taskproc_size = 0
         self.closing = None
 
     def add_response_request(self, response, request):
@@ -68,7 +70,9 @@ class Scraper(object):
         self.slot = None
         self.spidermw = SpiderMiddlewareManager.from_crawler(crawler)
         itemproc_cls = load_object(crawler.settings['ITEM_PROCESSOR'])
+        taskproc_cls = load_object(crawler.settings['TASK_PROCESSOR'])
         self.itemproc = itemproc_cls.from_crawler(crawler)
+        self.taskproc = taskproc_cls.from_crawler(crawler)
         self.concurrent_items = crawler.settings.getint('CONCURRENT_ITEMS')
         self.crawler = crawler
         self.signals = crawler.signals
@@ -99,11 +103,13 @@ class Scraper(object):
     def enqueue_scrape(self, response, request, spider):
         slot = self.slot
         dfd = slot.add_response_request(response, request)
+
         def finish_scraping(_):
             slot.finish_response(response, request)
             self._check_if_closing(spider, slot)
             self._scrape_next(spider, slot)
             return _
+
         dfd.addBoth(finish_scraping)
         dfd.addErrback(
             lambda f: logger.error('Scraper bug processing %(request)s',
@@ -123,7 +129,7 @@ class Scraper(object):
         callback/errback"""
         assert isinstance(response, (Response, Failure))
 
-        dfd = self._scrape2(response, request, spider) # returns spiders processed output
+        dfd = self._scrape2(response, request, spider)  # returns spiders processed output
         dfd.addErrback(self.handle_spider_error, request, response, spider)
         dfd.addCallback(self.handle_spider_output, request, response, spider)
         return dfd
@@ -173,7 +179,7 @@ class Scraper(object):
             return defer_succeed(None)
         it = iter_errback(result, self.handle_spider_error, request, response, spider)
         dfd = parallel(it, self.concurrent_items,
-            self._process_spidermw_output, request, response, spider)
+                       self._process_spidermw_output, request, response, spider)
         return dfd
 
     def _process_spidermw_output(self, output, request, response, spider):
@@ -186,6 +192,11 @@ class Scraper(object):
             self.slot.itemproc_size += 1
             dfd = self.itemproc.process_item(output, spider)
             dfd.addBoth(self._itemproc_finished, output, response, spider)
+            return dfd
+        elif isinstance(output, Task):
+            self.slot.taskproc_size += 1
+            dfd = self.taskproc.process_task(output, spider)
+            dfd.addBoth(self._taskproc_finished, output, response, spider)
             return dfd
         elif output is None:
             pass
@@ -245,3 +256,30 @@ class Scraper(object):
                 signal=signals.item_scraped, item=output, response=response,
                 spider=spider)
 
+    def _taskproc_finished(self, output, task, response, spider):
+        """ItemProcessor finished for the given ``item`` and returned ``output``
+        """
+        self.slot.taskproc_size -= 1
+        if isinstance(output, Failure):
+            ex = output.value
+            if isinstance(ex, DropTask):
+                logkws = self.logformatter.dropped(task, ex, response, spider)
+                if logkws is not None:
+                    logger.log(*logformatter_adapter(logkws), extra={'spider': spider})
+                return self.signals.send_catch_log_deferred(
+                    signal=signals.task_dropped, task=task, response=response,
+                    spider=spider, exception=output.value)
+            else:
+                logger.error('Error processing %(item)s', {'task': task},
+                             exc_info=failure_to_exc_info(output),
+                             extra={'spider': spider})
+                return self.signals.send_catch_log_deferred(
+                    signal=signals.task_error, task=task, response=response,
+                    spider=spider, failure=output)
+        else:
+            logkws = self.logformatter.scraped(output, response, spider)
+            if logkws is not None:
+                logger.log(*logformatter_adapter(logkws), extra={'spider': spider})
+            return self.signals.send_catch_log_deferred(
+                signal=signals.task_scraped, task=output, response=response,
+                spider=spider)

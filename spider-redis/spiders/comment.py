@@ -24,6 +24,8 @@ class CommentSpider(RedisSpider):
     redis_key = "comment_spider:start_urls"
 
     def parse(self, response):
+        task = response.request.task
+        yield task
         if response.url.endswith('page=1'):
             all_page = re.search(r'/>&nbsp;1/(\d+)页</div>', response.text)
             if all_page:
