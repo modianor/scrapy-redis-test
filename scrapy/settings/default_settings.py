@@ -195,7 +195,7 @@ IMAGES_STORE_S3_ACL = 'private'
 IMAGES_STORE_GCS_ACL = ''
 
 ITEM_PROCESSOR = 'scrapy.pipelines.ItemPipelineManager'
-TASK_PROCESSOR = 'scrapy.pipelines.TASKPipelineManager'
+TASK_PROCESSOR = 'scrapy.pipelines.TaskPipelineManager'
 
 ITEM_PIPELINES = {}
 ITEM_PIPELINES_BASE = {}
