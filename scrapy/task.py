@@ -1,9 +1,16 @@
 import json
 
 
+class TaskStatus:
+    SUCCESS = 4
+    FAIL = 5
+
+
 class Task(object):
 
-    def __init__(self, spider_name, task_type, url, param1='', param2='', param3='', task_status=5, exception='',
+    def __init__(self, spider_name, task_type, url, param1='', param2='', param3='', filter=False,
+                 task_status=TaskStatus.FAIL,
+                 exception='',
                  data='', kibanalog='') -> None:
         self.spider_name = spider_name
         self.task_type = task_type
@@ -12,6 +19,7 @@ class Task(object):
         self.param2 = param2
         self.param3 = param3
         self.task_status = task_status
+        self.filter = filter
         self.exception = exception
         self.data = data
         self.kibanalog = kibanalog
@@ -29,13 +37,9 @@ class Task(object):
             'param2': self.param2,
             'param3': self.param3,
             'task_status': self.task_status,
+            'filter': self.filter,
             'exception': self.exception,
             'data': self.data,
             'kibanalog': self.kibanalog
         }
         return json.dumps(data, ensure_ascii=False)
-
-
-class Status:
-    SUCCESS = 4
-    FAIL = 5

@@ -6,6 +6,7 @@ from twisted.python.failure import Failure
 from scrapy.utils.request import referer_str
 
 SCRAPEDMSG = u"Scraped from %(src)s" + os.linesep + "%(item)s"
+SCRAPEDTASKMSG = u"%(task)s"
 DROPPEDMSG = u"Dropped: %(exception)s" + os.linesep + "%(item)s"
 CRAWLEDMSG = u"Crawled (%(status)s) %(request)s%(request_flags)s (referer: %(referer)s)%(response_flags)s"
 
@@ -78,6 +79,21 @@ class LogFormatter(object):
             'args': {
                 'src': src,
                 'item': item,
+            }
+        }
+
+    def scraped_task(self, task, response, spider):
+        """Logs a message when an item is scraped by a spider."""
+        if isinstance(response, Failure):
+            src = response.getErrorMessage()
+        else:
+            src = response.url
+        return {
+            'level': logging.DEBUG,
+            'msg': SCRAPEDTASKMSG,
+            'args': {
+                # 'src': src,
+                'task': task,
             }
         }
 

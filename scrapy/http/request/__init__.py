@@ -38,7 +38,7 @@ class Request(object_ref):
 
 		self.cookies = cookies or {}
 		self.headers = Headers(headers or {}, encoding=encoding)
-		self.dont_filter = dont_filter
+		self.dont_filter = task.filter
 
 		self._meta = dict(meta) if meta else None
 		self._cb_kwargs = dict(cb_kwargs) if cb_kwargs else None

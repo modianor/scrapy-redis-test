@@ -4,6 +4,7 @@ extracts information from them"""
 import logging
 from collections import deque
 
+import logstash
 from twisted.python.failure import Failure
 from twisted.internet import defer
 
@@ -20,6 +21,8 @@ from scrapy.core.spidermw import SpiderMiddlewareManager
 from scrapy.utils.request import referer_str
 
 logger = logging.getLogger(__name__)
+task_logger = logging.getLogger('scrapy')
+task_logger.addHandler(logstash.TCPLogstashHandler('localhost', 5000, version=1))
 
 
 class Slot(object):
@@ -146,6 +149,8 @@ class Scraper(object):
                 self._log_download_errors, request_result, request, spider)
 
     def call_spider(self, result, request, spider):
+        # 将downloader的结果response作为spider的入参调用callback，接下来修改的目标是
+        # 将spider的入参的类型改为Task，spider的output为Task
         result.request = request
         dfd = defer_result(result)
         dfd.addCallbacks(callback=request.callback or spider.parse,
@@ -187,6 +192,7 @@ class Scraper(object):
         from the given spider
         """
         if isinstance(output, Request):
+            # 将新的request请求推入schedule，接下来修改的目标是将输入改为Task，并将Task推入schedule
             self.crawler.engine.crawl(request=output, spider=spider)
         elif isinstance(output, (BaseItem, dict)):
             self.slot.itemproc_size += 1
@@ -277,9 +283,9 @@ class Scraper(object):
                     signal=signals.task_error, task=task, response=response,
                     spider=spider, failure=output)
         else:
-            logkws = self.logformatter.scraped(output, response, spider)
+            logkws = self.logformatter.scraped_task(output, response, spider)
             if logkws is not None:
-                logger.log(*logformatter_adapter(logkws), extra={'spider': spider})
+                task_logger.log(*logformatter_adapter(logkws))
             return self.signals.send_catch_log_deferred(
                 signal=signals.task_scraped, task=output, response=response,
                 spider=spider)

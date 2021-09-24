@@ -12,10 +12,10 @@ DEFAULT_REQUEST_HEADERS = {
 }
 
 # https://docs.scrapy.org/en/latest/topics/settings.html#concurrent-requests
-CONCURRENT_REQUESTS = 1
+CONCURRENT_REQUESTS = 2
 
 # https://docs.scrapy.org/en/latest/topics/settings.html#std:setting-DOWNLOAD_DELAY
-DOWNLOAD_DELAY = 5
+DOWNLOAD_DELAY = 1
 
 # https://docs.scrapy.org/en/latest/topics/settings.html#download-timeout
 DOWNLOAD_TIMEOUT = 30
@@ -28,9 +28,9 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
     'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': None,
     'middlewares.CookieMiddleware': 300,
-    'middlewares.RedirectMiddleware': 200,
-    'middlewares.IPProxyMiddleware': 100,
-    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 101,
+    # 'middlewares.RedirectMiddleware': 200,
+    # 'middlewares.IPProxyMiddleware': 100,
+    # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 101,
 
 }
 
@@ -60,12 +60,15 @@ REDIS_URL = 'redis://{}:{}'.format(REDIS_HOST, REDIS_PORT)
 BLOOMFILTER_HASH_NUMBER = 6
 
 # Redis Memory Bit of Bloomfilter Usage, 30 means 2^30 = 128MB, defaults to 30
-BLOOMFILTER_BIT = 31
+BLOOMFILTER_BIT = 30
 
 # Persist
-SCHEDULER_PERSIST = True
+# SCHEDULER_PERSIST = False
 
 LOG_FORMAT = '%(asctime)s [%(name)s:%(lineno)d] %(levelname)s: %(message)s'
 
 # allow all response passing
 HTTPERROR_ALLOW_ALL = True
+
+# DUPEFILTER_DEBUG = True
+
