@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import scrapy
 from scrapy import Item, Field
 
 
@@ -60,3 +61,19 @@ class CommentItem(Item):
     created_at = Field()  # 评论发表时间
     like_num = Field()  # 点赞数
     crawl_time = Field()  # 抓取时间戳
+
+
+class HeiMaoTouSuItem(scrapy.Item):
+    api_name = scrapy.Field()
+    document_id = scrapy.Field()
+    url = scrapy.Field()
+    product_name = scrapy.Field()
+    title = scrapy.Field()
+    complaint_status = scrapy.Field()
+    comsumer_name = scrapy.Field()
+    time = scrapy.Field()
+    abstract = scrapy.Field()
+    group_complaint_id = scrapy.Field()
+    step_list = scrapy.Field()
+    insert_time = scrapy.Field()
+    wb_profile = scrapy.Field()

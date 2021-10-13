@@ -1,11 +1,29 @@
 """
 Helper functions for serializing (and deserializing) requests.
 """
+import copy
+import json
+
 import six
 
 from scrapy.http import Request
+from scrapy.task import Task
 from scrapy.utils.python import to_unicode, to_native_str
 from scrapy.utils.misc import load_object
+
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, bytes):
+            return str(obj, encoding='utf-8')
+        return json.JSONEncoder.default(self, obj)
+
+
+def convert_dict_key(data):
+    new_data = {
+        key.decode() if isinstance(key, bytes) else key: val.decode() if isinstance(val, bytes) else val
+        for key, val in data.items()}
+    return new_data
 
 
 def request_to_dict(request, spider=None):
@@ -20,8 +38,12 @@ def request_to_dict(request, spider=None):
     eb = request.errback
     if callable(eb):
         eb = _find_method(spider, eb)
+
+    request_task = request.task
+
+    request.headers = convert_dict_key(request.headers)
+
     d = {
-        'task': request.task,
         'url': to_unicode(request.url),  # urls should be safe (safe_string_url)
         'callback': cb,
         'errback': eb,
@@ -38,16 +60,24 @@ def request_to_dict(request, spider=None):
     }
     if type(request) is not Request:
         d['_class'] = request.__module__ + '.' + request.__class__.__name__
-    return d
-    # return str(request.task)
+    request_task.request = d
+    task_dict = request_task.to_dict()
+    return task_dict
 
 
-def request_from_dict(d, spider=None):
+def request_from_dict(json_data, spider=None):
     """Create Request object from a dict.
 
     If a spider is given, it will try to resolve the callbacks looking at the
     spider for methods with the same name.
     """
+    task_params = copy.deepcopy(json_data)
+    task_params['request'] = None
+
+    d = json_data['request']
+    task_ = Task.from_json(task_params)
+    d['task'] = task_
+
     cb = d['callback']
     if cb and spider:
         cb = _get_method(spider, cb)

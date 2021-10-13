@@ -1,5 +1,7 @@
 import json
 
+from scrapy import Request
+
 
 class TaskStatus:
     SUCCESS = 4
@@ -8,10 +10,10 @@ class TaskStatus:
 
 class Task(object):
 
-    def __init__(self, spider_name, task_type, url, param1='', param2='', param3='', filter=False,
+    def __init__(self, spider_name='', task_type='', url='', param1='', param2='', param3='', filter=False,
                  task_status=TaskStatus.FAIL,
                  exception='',
-                 data='', kibanalog='') -> None:
+                 data='', kibanalog='', request=None) -> None:
         self.spider_name = spider_name
         self.task_type = task_type
         self.url = url
@@ -23,6 +25,8 @@ class Task(object):
         self.exception = exception
         self.data = data
         self.kibanalog = kibanalog
+        self.request = Request(request) if request else None
+        self.response = None
 
     @classmethod
     def from_json(cls, task_params):
@@ -43,3 +47,20 @@ class Task(object):
             'kibanalog': self.kibanalog
         }
         return json.dumps(data, ensure_ascii=False)
+
+    def to_dict(self):
+        data = {
+            'spider_name': self.spider_name,
+            'task_type': self.task_type,
+            'url': self.url,
+            'param1': self.param1,
+            'param2': self.param2,
+            'param3': self.param3,
+            'task_status': self.task_status,
+            'filter': self.filter,
+            'exception': self.exception,
+            'data': self.data,
+            'kibanalog': self.kibanalog,
+            'request': self.request,
+        }
+        return data

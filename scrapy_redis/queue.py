@@ -1,4 +1,6 @@
-from scrapy.utils.reqser import request_to_dict, request_from_dict
+import json
+
+from scrapy.utils.reqser import request_to_dict, request_from_dict, MyEncoder
 
 from . import picklecompat
 
@@ -39,13 +41,14 @@ class Base(object):
 
     def _encode_request(self, request):
         """Encode a request object"""
-        obj = request_to_dict(request, self.spider)
-        return self.serializer.dumps(obj)
+        task_dict = request_to_dict(request, self.spider)
+        return json.dumps(task_dict, cls=MyEncoder, sort_keys=True, indent=4)
 
     def _decode_request(self, encoded_request):
         """Decode an request previously encoded"""
-        obj = self.serializer.loads(encoded_request)
-        return request_from_dict(obj, self.spider)
+        json_data = json.loads(encoded_request)
+        # obj = self.serializer.loads(encoded_request)
+        return request_from_dict(json_data, self.spider)
 
     def __len__(self):
         """Return the length of the queue"""

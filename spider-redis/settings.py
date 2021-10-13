@@ -12,7 +12,7 @@ DEFAULT_REQUEST_HEADERS = {
 }
 
 # https://docs.scrapy.org/en/latest/topics/settings.html#concurrent-requests
-CONCURRENT_REQUESTS = 2
+CONCURRENT_REQUESTS = 1
 
 # https://docs.scrapy.org/en/latest/topics/settings.html#std:setting-DOWNLOAD_DELAY
 DOWNLOAD_DELAY = 1
