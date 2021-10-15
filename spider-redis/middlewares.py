@@ -1,8 +1,10 @@
 # encoding: utf-8
+import base64
 import random
+import time
 
 import pymongo
-from settings import MONGO_PORT, MONGO_HOST
+from settings import MONGO_PORT, MONGO_HOST, ABUYUN_SOCIAL_MEDIA_PROXY_USERNAME, ABUYUN_SOCIAL_MEDIA_PROXY_PASSWORD
 
 
 class CookieMiddleware(object):
@@ -48,15 +50,27 @@ class RedirectMiddleware(object):
 
 
 class IPProxyMiddleware(object):
+    proxyServer = "http://http-dyn.abuyun.com:9020"
 
-    def fetch_proxy(self):
-        # You need to rewrite this function if you want to add proxy pool
-        # the function should return a ip in the format of "ip:port" like "12.34.1.4:9090"
-        return None
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(ABUYUN_SOCIAL_MEDIA_PROXY_USERNAME,
+                   ABUYUN_SOCIAL_MEDIA_PROXY_PASSWORD)
+
+    def __init__(self, proxy_user, proxy_pass):
+        self.proxyAuth = "Basic " + base64.urlsafe_b64encode(bytes((proxy_user + ":" + proxy_pass), "ascii")).decode(
+            "utf8")
 
     def process_request(self, request, spider):
-        proxy_data = self.fetch_proxy()
-        if proxy_data:
-            current_proxy = f'http://{proxy_data}'
-            spider.logger.debug(f"current proxy:{current_proxy}")
-            request.meta['proxy'] = current_proxy
+        need_proxy_list = getattr(spider, 'need_proxy_list', [])
+        if any([i for i in need_proxy_list if i in request.url]):
+            request.meta["proxy"] = self.proxyServer
+            request.headers["Proxy-Authorization"] = self.proxyAuth
+            time.sleep(1 / 5)
+
+    def process_response(self, request, response, spider):
+        retry_status_codes = getattr(spider, 'retry_status_codes', [])
+        if response.status in retry_status_codes:
+            return request
+        else:
+            return response

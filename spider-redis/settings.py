@@ -70,5 +70,6 @@ LOG_FORMAT = '%(asctime)s [%(name)s:%(lineno)d] %(levelname)s: %(message)s'
 # allow all response passing
 HTTPERROR_ALLOW_ALL = True
 
-# DUPEFILTER_DEBUG = True
-
+# social-media
+ABUYUN_SOCIAL_MEDIA_PROXY_USERNAME = "H6S03621NW5860ZD"
+ABUYUN_SOCIAL_MEDIA_PROXY_PASSWORD = "09B99515143D7AF2"

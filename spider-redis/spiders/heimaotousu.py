@@ -109,6 +109,7 @@ class HeiMaoTouSuSpider(RedisSpider):
             self.logger.error(f'店铺:{company_name}, uid:{uid}, 生成起始Request失败， 错误原因：{traceback.format_exc()}')
 
     def parse(self, response):
+        p_task = Task()
         try:
             p_task = self.get_task(response)
             uid = response.meta['uid']
@@ -131,17 +132,18 @@ class HeiMaoTouSuSpider(RedisSpider):
                         'uid': uid,
                         'last_update_time': last_update_time,
                     })
-            self.set_task(p_task, TaskStatus.SUCCESS)
             kibanalog = f'name:{self.name} callback:parse task_type:{p_task.task_type} 生成任务: {page_nums}条List任务'
             p_task.kibanalog = kibanalog
             yield p_task
         except:
+            self.set_task(p_task, TaskStatus.FAIL)
             self.logger.error(traceback.format_exc())
             kibanalog = f'name:{self.name} callback:parse exception:\n{traceback.format_exc()}'
             p_task.kibanalog = kibanalog
             yield p_task
 
     def parse_list(self, response):
+        p_task = Task()
         try:
             p_task = self.get_task(response)
             item = response.meta['item']
@@ -198,17 +200,16 @@ class HeiMaoTouSuSpider(RedisSpider):
                         'item': complaint_item,
                         'evaluate_u': evaluate_u
                     })
-            self.set_task(p_task, TaskStatus.SUCCESS)
-            kibanalog = f'name:{self.name} callback:parse_list task_type:{p_task.task_type} 生成任务: {len(complaints)}条Detail任务'
-            p_task.kibanalog = kibanalog
+            p_task.kibanalog = f'name:{self.name} callback:parse_list task_type:{p_task.task_type} 生成任务: {len(complaints)}条Detail任务'
             yield p_task
         except:
+            self.set_task(p_task, TaskStatus.FAIL)
             self.logger.error(traceback.format_exc())
-            kibanalog = f'name:{self.name} callback:parse_list exception:\n{traceback.format_exc()}'
-            p_task.kibanalog = kibanalog
+            p_task.kibanalog = f'name:{self.name} callback:parse_list exception:\n{traceback.format_exc()}'
             yield p_task
 
     def parse_detail(self, response):
+        p_task = Task()
         try:
             p_task = self.get_task(response)
             item = response.meta['item']
@@ -246,14 +247,12 @@ class HeiMaoTouSuSpider(RedisSpider):
             item['insert_time'] = datetime.datetime.utcnow()
             yield item
 
-            self.set_task(p_task, TaskStatus.SUCCESS)
-            kibanalog = f'name:{self.name} callback:parse_detail task_type:{p_task.task_type} 任务状态:成功'
-            p_task.kibanalog = kibanalog
+            p_task.kibanalog = f'name:{self.name} callback:parse_detail task_type:{p_task.task_type} 任务状态:成功'
             yield p_task
         except:
+            self.set_task(p_task, TaskStatus.FAIL)
             self.logger.error(traceback.format_exc())
-            kibanalog = f'name:{self.name} callback:parse_detail exception:\n{traceback.format_exc()}'
-            p_task.kibanalog = kibanalog
+            p_task.kibanalog = f'name:{self.name} callback:parse_detail exception:\n{traceback.format_exc()}'
             yield p_task
 
     def get_company_page(self, url):

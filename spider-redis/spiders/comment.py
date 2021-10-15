@@ -6,6 +6,7 @@ Author: nghuyong
 Mail: nghuyong@163.com
 Created Time: 2020/4/14
 """
+import json
 import re
 import time
 import traceback
@@ -34,6 +35,11 @@ class CommentSpider(RedisSpider):
     def set_task(self, task, status):
         task.task_status = status
 
+    def make_request_from_data(self, data):
+        data = json.loads(data)
+        task = Task.from_json(data)
+        return FormRequest(task=task, method='GET', priority=10, callback=self.parse)
+
     def parse(self, response):
         try:
             task = self.get_task(response)
@@ -46,7 +52,8 @@ class CommentSpider(RedisSpider):
                     for page_num in range(2, all_page + 1):
                         page_url = response.url.replace('page=1', 'page={}'.format(page_num))
                         next_task = Task(spider_name='comment_spider', task_type='Detail', url=page_url)
-                        yield FormRequest(next_task, self.parse, method='GET', dont_filter=next_task.filter,
+                        yield FormRequest(next_task, self.parse, formdata={}, method='GET',
+                                          dont_filter=next_task.filter,
                                           meta=response.meta,
                                           callback=self.parse_item)
                 self.set_task(task, TaskStatus.SUCCESS)
@@ -80,10 +87,9 @@ class CommentSpider(RedisSpider):
                 comment_item['like_num'] = int(re.search('\d+', like_num).group())
                 comment_item['created_at'] = time_fix(created_at_info.split('\xa0')[0])
                 yield comment_item
-            task.task_status = TaskStatus.SUCCESS
-            kibanalog = f'name:{self.name} callback:parse_item 解析item:{len(comment_nodes)}'
-            task.kibanalog = kibanalog
-            yield task
+                item_task = task.copy()
+                item_task.kibanalog = f'name:{self.name} callback:parse_item task_type:{item_task.task_type} 任务状态:成功'
+                yield item_task
         except:
             kibanalog = f'name:{self.name} callback:parse_item exception:\n{traceback.format_exc()}'
             task.kibanalog = kibanalog

@@ -11,7 +11,7 @@ class TaskStatus:
 class Task(object):
 
     def __init__(self, spider_name='', task_type='', url='', param1='', param2='', param3='', filter=False,
-                 task_status=TaskStatus.FAIL,
+                 task_status=TaskStatus.SUCCESS,
                  exception='',
                  data='', kibanalog='', request=None) -> None:
         self.spider_name = spider_name
@@ -64,3 +64,17 @@ class Task(object):
             'request': self.request,
         }
         return data
+
+    def copy(self):
+        """Return a copy of this Request"""
+        return self.replace()
+
+    def replace(self, *args, **kwargs):
+        """Create a new Request with the same attributes except for those
+        given new values.
+        """
+        for x in ['spider_name', 'task_type', 'url', 'param1', 'param2', 'param3', 'task_status', 'filter',
+                  'exception', 'data', 'kibanalog']:
+            kwargs.setdefault(x, getattr(self, x))
+        cls = kwargs.pop('cls', self.__class__)
+        return cls(*args, **kwargs)
