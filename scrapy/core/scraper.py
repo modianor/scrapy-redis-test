@@ -21,7 +21,7 @@ from scrapy.core.spidermw import SpiderMiddlewareManager
 from scrapy.utils.request import referer_str
 
 logger = logging.getLogger(__name__)
-task_logger = logging.getLogger('scrapy')
+task_logger = logging.getLogger('scrapy_venom')
 task_logger.addHandler(logstash.TCPLogstashHandler('localhost', 5000, version=1))
 
 

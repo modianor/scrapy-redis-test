@@ -22,6 +22,7 @@ class FormRequest(Request):
 
     def __init__(self, *args, **kwargs):
         formdata = kwargs.pop('formdata', None)
+        self.formdata = formdata
         if formdata and kwargs.get('method') is None:
             kwargs['method'] = 'POST'
 
@@ -185,7 +186,7 @@ def _get_clickable(clickdata, form):
             'descendant::input[re:test(@type, "^(submit|image)$", "i")]'
             '|descendant::button[not(@type) or re:test(@type, "^submit$", "i")]',
             namespaces={"re": "http://exslt.org/regular-expressions"})
-        ]
+    ]
     if not clickables:
         return
 

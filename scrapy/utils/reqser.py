@@ -45,6 +45,7 @@ def request_to_dict(request, spider=None):
 
     d = {
         'url': to_unicode(request.url),  # urls should be safe (safe_string_url)
+        'formdata': request.formdata,  # urls should be safe (safe_string_url)
         'callback': cb,
         'errback': eb,
         'method': request.method,
@@ -87,6 +88,7 @@ def request_from_dict(json_data, spider=None):
     request_cls = load_object(d['_class']) if '_class' in d else Request
     return request_cls(
         task=d['task'],
+        formdata=d['formdata'],
         url=to_native_str(d['url']),
         callback=cb,
         errback=eb,

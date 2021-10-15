@@ -1,5 +1,6 @@
 *.pyc
-.idea
+.idea/*
+.idea*
 .venv*
 venv*
 .env*
@@ -20,3 +21,4 @@ test*.py
 logstash.db
 *test*
 *mongo_inject*
+*Test*

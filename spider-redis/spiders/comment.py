@@ -7,16 +7,15 @@ Mail: nghuyong@163.com
 Created Time: 2020/4/14
 """
 import re
-import sys
 import time
 import traceback
 
 from lxml import etree
-from scrapy.http import Request
-from scrapy.task import Task, TaskStatus
-from scrapy_redis.spiders import RedisSpider
 
 from items import CommentItem
+from scrapy import FormRequest
+from scrapy.task import Task, TaskStatus
+from scrapy_redis.spiders import RedisSpider
 from spiders.utils import extract_comment_content, time_fix
 
 
@@ -47,16 +46,17 @@ class CommentSpider(RedisSpider):
                     for page_num in range(2, all_page + 1):
                         page_url = response.url.replace('page=1', 'page={}'.format(page_num))
                         next_task = Task(spider_name='comment_spider', task_type='Detail', url=page_url)
-                        yield Request(next_task, self.parse, dont_filter=next_task.filter, meta=response.meta,
-                                      callback=self.parse_item)
+                        yield FormRequest(next_task, self.parse, method='GET', dont_filter=next_task.filter,
+                                          meta=response.meta,
+                                          callback=self.parse_item)
                 self.set_task(task, TaskStatus.SUCCESS)
-                kibanalog = f'name:{self.name} callback:{sys._getframe(0).f_code.co_name} {task.task_type}生成任务:{50}'
+                kibanalog = f'name:{self.name} callback:parse {task.task_type}生成任务:{50}'
             else:
-                kibanalog = f'name:{self.name} callback:{sys._getframe(0).f_code.co_name} {task.task_type}生成失败任务'
+                kibanalog = f'name:{self.name} callback:parse {task.task_type}生成失败任务'
             task.kibanalog = kibanalog
             yield task
         except:
-            kibanalog = f'name:{self.name} callback:{sys._getframe(0).f_code.co_name} exception:\n{traceback.format_exc()}'
+            kibanalog = f'name:{self.name} callback:parse exception:\n{traceback.format_exc()}'
             task.kibanalog = kibanalog
             yield task
 
@@ -81,10 +81,10 @@ class CommentSpider(RedisSpider):
                 comment_item['created_at'] = time_fix(created_at_info.split('\xa0')[0])
                 yield comment_item
             task.task_status = TaskStatus.SUCCESS
-            kibanalog = f'name:{self.name} callback:{sys._getframe(0).f_code.co_name} 解析item:{len(comment_nodes)}'
+            kibanalog = f'name:{self.name} callback:parse_item 解析item:{len(comment_nodes)}'
             task.kibanalog = kibanalog
             yield task
         except:
-            kibanalog = f'name:{self.name} callback:{sys._getframe(0).f_code.co_name} exception:\n{traceback.format_exc()}'
+            kibanalog = f'name:{self.name} callback:parse_item exception:\n{traceback.format_exc()}'
             task.kibanalog = kibanalog
             yield task
