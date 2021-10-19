@@ -23,7 +23,7 @@ if __name__ == '__main__':
     os.environ['SCRAPY_SETTINGS_MODULE'] = f'settings'
     settings = get_project_settings()
     process = CrawlerProcess(settings)
-    # process.crawl(HeiMaoTouSuSpider)
-    process.crawl(CommentSpider)
+    process.crawl(HeiMaoTouSuSpider)
+    # process.crawl(CommentSpider)
     # the script will block here until the crawling is finished
     process.start()

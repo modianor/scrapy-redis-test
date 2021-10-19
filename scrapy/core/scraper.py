@@ -276,7 +276,7 @@ class Scraper(object):
                     signal=signals.task_dropped, task=task, response=response,
                     spider=spider, exception=output.value)
             else:
-                logger.error('Error processing %(item)s', {'task': task},
+                logger.error('Error processing %(task)s', {'task': task},
                              exc_info=failure_to_exc_info(output),
                              extra={'spider': spider})
                 return self.signals.send_catch_log_deferred(

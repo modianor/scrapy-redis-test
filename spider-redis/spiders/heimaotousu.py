@@ -85,8 +85,9 @@ class HeiMaoTouSuSpider(RedisSpider):
     def make_request_from_data(self, data):
         data = json.loads(data)
         task = Task.from_json(data)
-        uid = task.param1['uid']
-        company_name = task.param1['title']
+        param1 = json.loads(task.param1)
+        uid = param1['uid']
+        company_name = param1['title']
 
         try:
             url = 'https://tousu.sina.com.cn/api/company/received_complaints'
@@ -124,8 +125,8 @@ class HeiMaoTouSuSpider(RedisSpider):
                                           timestamp=timestamp)
                 item = dict()
                 item['product_name'] = company_name
-                c_task = Task(spider_name=self.name, url=url, param2=json.dumps(params, ensure_ascii=False),
-                              task_type='List')
+                param2 = json.dumps(params, ensure_ascii=False)
+                c_task = Task(spider_name=self.name, url=url, param2=param2, task_type='List')
                 yield FormRequest(task=c_task, method='GET', formdata=params, headers=self.headers, priority=10,
                                   callback=self.parse_list, meta={
                         'item': item,
@@ -270,7 +271,8 @@ class HeiMaoTouSuSpider(RedisSpider):
                 return 100
         else:
             return 1
-        # return page_nums if page_nums and page_nums < 100 else 100
+
+    # return page_nums if page_nums and page_nums < 100 else 100
 
     def get_complaint_page(self, url, params):
         response = requests.get(url, params=params, headers=self.headers)

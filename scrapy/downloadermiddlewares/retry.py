@@ -13,11 +13,12 @@ import logging
 
 from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
-        ConnectionRefusedError, ConnectionDone, ConnectError, \
-        ConnectionLost, TCPTimedOutError
+    ConnectionRefusedError, ConnectionDone, ConnectError, \
+    ConnectionLost, TCPTimedOutError
 from twisted.web.client import ResponseFailed
 
 from scrapy.exceptions import NotConfigured
+from scrapy.task import TaskStatus
 from scrapy.utils.response import response_status_message
 from scrapy.core.downloader.handlers.http11 import TunnelError
 from scrapy.utils.python import global_object_name
@@ -26,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 
 class RetryMiddleware(object):
-
     # IOError is raised by the HttpCompression middleware when trying to
     # decompress an empty response
     EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
@@ -83,7 +83,13 @@ class RetryMiddleware(object):
             stats.inc_value('retry/reason_count/%s' % reason)
             return retryreq
         else:
+            # 可以上报错误任务
+            retry_task = request.task
+            retry_task.task_status = TaskStatus.FAIL
+            retry_task.kibanalog = '请求重试失败 {}'.format(request)
+            retry_task.exception = '异常原因 {}'.format(reason)
             stats.inc_value('retry/max_reached')
             logger.debug("Gave up retrying %(request)s (failed %(retries)d times): %(reason)s",
                          {'request': request, 'retries': retries, 'reason': reason},
                          extra={'spider': spider})
+            return retry_task

@@ -15,13 +15,13 @@ DEFAULT_REQUEST_HEADERS = {
 CONCURRENT_REQUESTS = 1
 
 # https://docs.scrapy.org/en/latest/topics/settings.html#std:setting-DOWNLOAD_DELAY
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 0.1
 
 # https://docs.scrapy.org/en/latest/topics/settings.html#download-timeout
 DOWNLOAD_TIMEOUT = 30
 
 # https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#retry-times
-RETRY_TIMES = 20
+RETRY_TIMES = 1
 
 DOWNLOADER_MIDDLEWARES = {
     'weibo.middlewares.UserAgentMiddleware': None,

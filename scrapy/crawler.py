@@ -83,7 +83,7 @@ class Crawler(object):
 
         try:
             self.spider = self._create_spider(*args, **kwargs)
-            self.engine = self._create_engine()
+            self.engine = self.engine if self.engine else self._create_engine()
             start_requests = iter(self.spider.start_requests())
             yield self.engine.open_spider(self.spider, start_requests)
             yield defer.maybeDeferred(self.engine.start)

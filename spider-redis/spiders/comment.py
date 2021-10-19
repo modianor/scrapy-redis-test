@@ -76,7 +76,7 @@ class CommentSpider(RedisSpider):
                 comment_user_url = comment_node.xpath('.//a[contains(@href,"/u/")]/@href')
                 if not comment_user_url:
                     continue
-                comment_item = CommentItem()
+                comment_item = dict()
                 comment_item['crawl_time'] = int(time.time())
                 comment_item['weibo_id'] = response.url.split('/')[-1].split('?')[0]
                 comment_item['comment_user_id'] = re.search(r'/u/(\d+)', comment_user_url[0]).group(1)

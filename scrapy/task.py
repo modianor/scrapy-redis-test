@@ -14,6 +14,8 @@ class Task(object):
                  task_status=TaskStatus.SUCCESS,
                  exception='',
                  data='', kibanalog='', request=None) -> None:
+        self.task_id = ''
+        self.parent_task_id = ''
         self.spider_name = spider_name
         self.task_type = task_type
         self.url = url
@@ -50,6 +52,8 @@ class Task(object):
 
     def to_dict(self):
         data = {
+            'task_id': self.task_id,
+            'parent_task_id': self.parent_task_id,
             'spider_name': self.spider_name,
             'task_type': self.task_type,
             'url': self.url,
@@ -66,14 +70,15 @@ class Task(object):
         return data
 
     def copy(self):
-        """Return a copy of this Request"""
+        """Return a copy of this Task"""
         return self.replace()
 
     def replace(self, *args, **kwargs):
         """Create a new Request with the same attributes except for those
         given new values.
         """
-        for x in ['spider_name', 'task_type', 'url', 'param1', 'param2', 'param3', 'task_status', 'filter',
+        for x in ['task_id', 'parent_task_id', 'spider_name', 'task_type', 'url', 'param1', 'param2', 'param3',
+                  'task_status', 'filter',
                   'exception', 'data', 'kibanalog']:
             kwargs.setdefault(x, getattr(self, x))
         cls = kwargs.pop('cls', self.__class__)

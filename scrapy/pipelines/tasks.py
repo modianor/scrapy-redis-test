@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
+
+import logstash
+
+task_logger = logging.getLogger('scrapy_venom')
+task_logger.addHandler(logstash.TCPLogstashHandler('localhost', 5000, version=1))
 
 
 class TaskPipeline(object):

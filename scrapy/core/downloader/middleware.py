@@ -3,16 +3,19 @@ Downloader Middleware manager
 
 See documentation in docs/topics/downloader-middleware.rst
 """
+import logging
+
+import logstash
 import six
 
 from twisted.internet import defer
 
 from scrapy.exceptions import _InvalidOutput
-from scrapy.http import Request, Response
+from scrapy.http import Request, Response, ErrorResponse
 from scrapy.middleware import MiddlewareManager
+from scrapy.task import Task
 from scrapy.utils.defer import mustbe_deferred
 from scrapy.utils.conf import build_component_list
-
 
 class DownloaderMiddlewareManager(MiddlewareManager):
 
@@ -63,6 +66,9 @@ class DownloaderMiddlewareManager(MiddlewareManager):
             exception = _failure.value
             for method in self.methods['process_exception']:
                 response = yield method(request=request, exception=exception, spider=spider)
+                if response is not None and isinstance(response, Task):
+                    response = ErrorResponse(url=request._url)
+                    response.request = request
                 if response is not None and not isinstance(response, (Response, Request)):
                     raise _InvalidOutput('Middleware %s.process_exception must return None, Response or Request, got %s' % \
                                          (six.get_method_self(method).__class__.__name__, type(response)))
